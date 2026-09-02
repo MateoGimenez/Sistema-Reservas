@@ -1,6 +1,7 @@
 import supabase from "../config/supabase.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import AppError from "../errors/AppError.js"
 
 const ValidationAuth = async (email, password) => {
 
@@ -13,15 +14,15 @@ const ValidationAuth = async (email, password) => {
         .single();
 
     if (error && error.code !== "PGRST116") {
-        throw new Error("Error de Supabase");
+        throw new AppError("Error de Supabase", 500);
     }
 
     if (!data) {
-        throw new Error("Credenciales Incorrectas");
+        throw new AppError("Credenciales Incorrectas", 401);
     }
 
     if (!data.activo) {
-        throw new Error("Credenciales Incorrectas");
+        throw new AppError("Credenciales Incorrectas", 401);
     }
 
     const passwordCorrecta = await bcrypt.compare(
@@ -30,7 +31,7 @@ const ValidationAuth = async (email, password) => {
     );
 
     if (!passwordCorrecta) {
-        throw new Error("Credenciales Incorrectas");
+        throw new AppError("Credenciales Incorrectas", 401);
     }
 
     const token = jwt.sign(
