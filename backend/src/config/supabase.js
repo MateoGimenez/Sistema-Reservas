@@ -9,6 +9,6 @@ if (!supabaseUrl || !supabaseKey) {
   console.log("Supabase URL y Key configurados correctamente.");
 }
 
-const clientSupabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default clientSupabase;
+export default supabase;

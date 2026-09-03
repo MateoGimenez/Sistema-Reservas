@@ -8,7 +8,7 @@ const ValidationAuth = async (email, password) => {
     const { data, error } = await supabase
         .from("usuarios")
         .select(
-            "id,nombre,email,telefono,password,activo,rol(id,nombre)"
+            "id,nombre,email,telefono,password,activo,roles(id,nombre)"
         )
         .eq("email", email)
         .single();
@@ -37,7 +37,7 @@ const ValidationAuth = async (email, password) => {
     const token = jwt.sign(
         {
             id: data.id,
-            rol: data.rol.nombre
+            rol: data.roles.nombre
         },
         process.env.JWT_SECRET,
         {
@@ -52,7 +52,7 @@ const ValidationAuth = async (email, password) => {
             nombre: data.nombre,
             email: data.email,
             telefono: data.telefono,
-            rol: data.rol.nombre
+            rol: data.roles.nombre
         }
     };
 
