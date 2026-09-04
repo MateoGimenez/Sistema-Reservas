@@ -35,8 +35,6 @@ export const authorizeRoles = (...roles) => {
       role.trim().toUpperCase()
     );
 
-    console.log("Rol del usuario:", userRole);
-
     if (!allowedRoles.includes(userRole)) {
       return next(new AppError("Sin permisos necesarios", 403));
     }
