@@ -1,4 +1,4 @@
-import {getAllUsers , CreateUser }from "../services/userServices.js";
+import {getAllUsers , CreateUser , EditUser , DeleteUser}from "../services/userServices.js";
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -20,3 +20,27 @@ export const NewUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const EditUserId = async (req, res, next) => {
+  try{
+    const userId = req.params.userId
+    const userData = req.body
+    const UserData = await EditUser(userId, userData)
+    return res.json(UserData)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const DeleteUserId = async (req , res , next) =>{
+  try{
+    const userId = req.params.userId
+
+    const UserResult = await DeleteUser(userId)
+
+    return res.json(UserResult)
+
+  }catch (error) {
+    next(error)
+  }
+}
