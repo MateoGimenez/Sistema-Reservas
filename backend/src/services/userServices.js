@@ -98,13 +98,7 @@ export const DeleteUser = async (userId) => {
     throw new AppError("ID de usuario no proporcionado", 400);
   }
 
-  const id = Number(userId);
-
-  if (isNaN(id)) {
-    throw new AppError("ID de usuario inválido", 400);
-  }
-
-  const {data , error } = await supabase.from("usuarios").delete().eq("id", id).single()
+  const {data , error } = await supabase.from("usuarios").delete().eq("id", userId).select().single();
 
   if(error) {
     throw new AppError("Error al eliminar el usuario", 500);

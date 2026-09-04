@@ -23,7 +23,7 @@ export const NewUser = async (req, res, next) => {
 
 export const EditUserId = async (req, res, next) => {
   try{
-    const userId = req.params.userId
+    const userId = Number(req.params.id);
     const userData = req.body
     const UserData = await EditUser(userId, userData)
     return res.json(UserData)
@@ -34,7 +34,7 @@ export const EditUserId = async (req, res, next) => {
 
 export const DeleteUserId = async (req , res , next) =>{
   try{
-    const userId = req.params.userId
+    const userId = Number(req.params.id);
 
     const UserResult = await DeleteUser(userId)
 
