@@ -1,4 +1,4 @@
-import { getAllBarbers , CreateBarber } from "../services/barbersServices.js";
+import { getAllBarbers , CreateBarber , EditBarber , DeleteBarber } from "../services/barbersServices.js";
 
 export const getBarbers = async (req, res, next) => {
   try {
@@ -21,26 +21,26 @@ export const NewBarber = async (req, res, next) => {
   }
 };
 
-// export const EditBarberId = async (req, res, next) => {
-//   try{
-//     const barberId = Number(req.params.id);
-//     const barberData = req.body
-//     const BarberData = await EditBarber(barberId, barberData)
-//     return res.json(BarberData)
-//   } catch (error) {
-//     next(error)
-//   }
-// }
+export const EditBarberId = async (req, res, next) => {
+  try{
+    const barberId = Number(req.params.id);
+    const barberData = req.body
+    const BarberData = await EditBarber(barberId, barberData)
+    return res.json(BarberData)
+  } catch (error) {
+    next(error)
+  }
+}
 
-// export const DeleteBarberId = async (req , res , next) =>{
-//   try{
-//     const barberId = Number(req.params.id);
+export const DeleteBarberId = async (req , res , next) =>{
+  try{
+    const barberId = Number(req.params.id);
 
-//     const BarberResult = await DeleteBarber(barberId)
+    const BarberResult = await DeleteBarber(barberId)
 
-//     return res.json(BarberResult)
+    return res.json(BarberResult)
 
-//   }catch (error) {
-//     next(error)
-//   }
-// }
+  }catch (error) {
+    next(error)
+  }
+}
