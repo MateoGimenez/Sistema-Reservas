@@ -12,3 +12,5 @@ router.post("/barberos" , authorizeToken, authorizeRoles("admin"), NewBarber)
 router.put('/barberos/:id', authorizeToken, authorizeRoles("admin"), verificarBarbero, EditBarberId)
 
 router.delete('/barberos/:id', authorizeToken, authorizeRoles("admin"), verificarBarbero, DeleteBarberId)
+
+export default router
