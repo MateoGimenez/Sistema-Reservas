@@ -1,7 +1,7 @@
 import Router from "express"
-import { getBarbers , NewBarber , EditBarberId , DeleteBarberId } from "../controllers/barbersControllers.js"
+import { getBarbers , NewBarber , EditBarberId , DeleteBarberId } from "../controllers/barberosControllers.js"
 import { authorizeRoles, authorizeToken } from "../middlewares/authMiddleware.js"; 
-import { verificarBarbero } from "../middlewares/barbersMiddleware.js"; 
+import { verificarBarbero } from "../middlewares/barberosMiddleware.js"; 
 
 const router = Router();
 

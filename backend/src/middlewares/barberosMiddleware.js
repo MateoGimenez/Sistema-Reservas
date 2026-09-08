@@ -1,5 +1,5 @@
-import { supabase } from "../config/supabase.js";
-import { AppError } from "../utils/AppError.js";
+import supabase from "../config/supabase.js";
+import AppError from "../errors/AppError.js";
 
 export const verificarBarbero = async (req, res, next) => {
   const barberId = req.params.id;

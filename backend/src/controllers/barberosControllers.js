@@ -1,4 +1,4 @@
-import { getAllBarbers , CreateBarber , EditBarber , DeleteBarber } from "../services/barbersServices.js";
+import { getAllBarbers , CreateBarber , EditBarber , DeleteBarber } from "../services/barberosServices.js";
 
 export const getBarbers = async (req, res, next) => {
   try {

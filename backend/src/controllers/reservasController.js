@@ -1,11 +1,37 @@
-import { getAllReservas } from "../services/reservaServices.js"
+import * as reservasService from "../services/reservaServices.js"
 
-export const getReservas = async (req, res, next) => {
-  try {
-    const Reservas = await getAllReservas();
+export const getAllReservas = async (req, res, next) => {
+    try {
+        const data = await reservasService.obtenerTodasLasReservas()
+        res.json(data)
+    } catch (error) {
+        next(error)
+    }
+}
 
-    return res.json(Reservas);
-  } catch (error) {
-    next(error);
-  }
-};
+export const createReserva = async (req, res, next) => {
+    try {
+        const nuevaReserva = await reservasService.crearNuevaReserva(req.body)
+        res.status(201).json(nuevaReserva)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const updateReserva = async (req, res, next) => {
+    try {
+        const reservaActualizada = await reservasService.actualizarReservaExistente(req.params.id, req.body)
+        res.json(reservaActualizada)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const deleteReserva = async (req, res, next) => {
+    try {
+        const resultado = await reservasService.eliminarReservaExistente(req.params.id)
+        res.json(resultado)
+    } catch (error) {
+        next(error)
+    }
+}

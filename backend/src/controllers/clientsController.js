@@ -1,4 +1,4 @@
-import { CreateClient, getAllClients, getClientById, EditClient, DeleteClient } from '../controllers/clientsController.js';
+import { CreateClient, getAllClients, EditClient, DeleteClient } from '../services/clientesServices.js';
 export const getClients = async (req, res, next) => {
   try {
     const clients = await getAllClients();

@@ -1,4 +1,5 @@
 import supabase from "../config/supabase.js"
+import AppError from "../errors/AppError.js";
 
 export const getAllBarbers = async () => {
   const { data, error } = await supabase
@@ -244,3 +245,4 @@ export const DeleteBarber = async (BarberId) => {
 
   return data;
 }
+
