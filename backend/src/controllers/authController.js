@@ -1,4 +1,4 @@
-import ValidationAuth from "../services/authServices.js";
+import {ValidationAuth , ValidationRegister} from "../services/authServices.js";
 
 export const login = async (req, res) => {
 
@@ -8,3 +8,10 @@ export const login = async (req, res) => {
 
     return res.json(authData);
 };
+
+export const register = async (req , res) =>{
+
+    const usuario = await ValidationRegister(req.body)
+
+    return res.json(usuario)
+}
