@@ -8,8 +8,7 @@ const router = Router()
 router.get("/reservas", authorizeToken, authorizeRoles('admin'), getAllReservas)
 
 // POST - Crear nueva reserva (cliente puede crear la suya, admin cualquiera)
-// router.post("/reservas", authorizeToken, authorizeRoles('cliente', 'admin'), createReserva)
-router.post("/reservas", createReserva)
+router.post("/reservas", authorizeToken, authorizeRoles("admin", "cliente"), createReserva)
 
 // PUT - Actualizar reserva (admin o dueño)
 router.put("/reservas/:id", authorizeToken, authorizeRoles('admin', 'cliente'), updateReserva)

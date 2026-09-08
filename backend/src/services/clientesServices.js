@@ -1,6 +1,6 @@
 import supabase from "../config/supabase.js";
 
-import AppError from "../errors/AppError.js";
+import bcrypt from "bcryptjs";
 
 
 export const getAllClients = async () => {
@@ -44,7 +44,12 @@ export const getAllClients = async () => {
 };
 
 
-export const CreateClient = async (userId) => {
+export const CreateClient = async (clientData) => {
+  const userId = clientData?.usuario_id ?? clientData?.userId;
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new AppError("El campo 'usuario_id' debe ser un entero positivo", 400);
+  }
 
   const { data, error } = await supabase
 

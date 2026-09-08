@@ -11,7 +11,7 @@ export const getAllReservas = async (req, res, next) => {
 
 export const createReserva = async (req, res, next) => {
     try {
-        const nuevaReserva = await reservasService.crearNuevaReserva(req.body)
+        const nuevaReserva = await reservasService.crearNuevaReserva(req.body, req.user)
         res.status(201).json(nuevaReserva)
     } catch (error) {
         next(error)
@@ -20,7 +20,7 @@ export const createReserva = async (req, res, next) => {
 
 export const updateReserva = async (req, res, next) => {
     try {
-        const reservaActualizada = await reservasService.actualizarReservaExistente(req.params.id, req.body)
+        const reservaActualizada = await reservasService.actualizarReservaExistente(req.params.id, req.body, req.user)
         res.json(reservaActualizada)
     } catch (error) {
         next(error)
@@ -29,7 +29,7 @@ export const updateReserva = async (req, res, next) => {
 
 export const deleteReserva = async (req, res, next) => {
     try {
-        const resultado = await reservasService.eliminarReservaExistente(req.params.id)
+        const resultado = await reservasService.eliminarReservaExistente(req.params.id, req.user)
         res.json(resultado)
     } catch (error) {
         next(error)

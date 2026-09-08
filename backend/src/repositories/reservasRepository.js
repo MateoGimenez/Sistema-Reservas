@@ -74,6 +74,17 @@ export const obtenerReservasConflicto = async (barberoId, fecha, horaInicio, hor
     return data || []
 }
 
+export const obtenerClientePorUsuarioId = async (usuarioId) => {
+    const { data, error } = await supabase
+        .from("clientes")
+        .select("id")
+        .eq("usuario_id", usuarioId)
+        .single()
+
+    if (error || !data) throw new AppError("Cliente no encontrado", 404)
+    return data
+}
+
 export const obtenerEstadoPorNombre = async (nombre) => {
     const { data, error } = await supabase
         .from("estados_reserva")

@@ -3,7 +3,7 @@ import AppError from "../errors/AppError.js";
 
 export const verificarBarbero = async (req, res, next) => {
   const barberId = req.params.id;
-  const usuarioId = req.usuario.id;
+  const usuarioId = req.user.id;
 
   const { data: barbero, error } = await supabase
     .from("barberos")

@@ -1,5 +1,6 @@
 import supabase from "../config/supabase.js"
 import AppError from "../errors/AppError.js";
+import bcrypt from "bcryptjs";
 
 export const getAllBarbers = async () => {
   const { data, error } = await supabase
@@ -28,18 +29,31 @@ export const getAllBarbers = async () => {
 
 export const CreateBarber = async (barberData) => {
   const { nombre, apellido, email, password, telefono, descripcion, servicios } = barberData;
+  if (!nombre || !apellido || !email || !password) {
+    throw new AppError("Nombre, apellido, email y contraseña son requeridos", 400);
+  }
   const passwordHash = await bcrypt.hash(password, 10);
 
   try {
+    const { data: rolBarbero, error: rolError } = await supabase
+      .from("roles")
+      .select("id")
+      .eq("nombre", "BARBERO")
+      .single();
+
+    if (rolError || !rolBarbero) {
+      throw new AppError("El rol BARBERO no existe", 500);
+    }
+
     const { data: usuarioData, error: usuarioError } = await supabase
-      .from("barberos")
+      .from("usuarios")
       .insert({
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         email: email.trim().toLowerCase(),
         password: passwordHash,
         telefono: telefono?.trim() || null,
-        rol_id: 2 // ID del rol "barbero"
+        rol_id: rolBarbero.id
       })
       .select("id")
       .single();
@@ -83,6 +97,7 @@ export const CreateBarber = async (barberData) => {
       .single();
 
     if (barberoError) {
+      await supabase.from("usuarios").delete().eq("id", usuarioData.id);
       throw new AppError("Error al crear el registro de barbero", 500);
     }
 
@@ -102,8 +117,7 @@ export const CreateBarber = async (barberData) => {
         .insert(serviciosData);
 
       if (serviciosError) {
-        console.error("Error al asignar servicios:", serviciosError);
-        // No lanzamos error aquí, el barbero ya fue creado
+        throw new AppError("Error al asignar servicios al barbero", 500);
       }
     }
 
@@ -163,10 +177,6 @@ export const EditBarber = async (BarberId, BarberData) => {
 
   if (telefono !== undefined) {
     updates.telefono = telefono?.trim() || null;
-  }
-
-  if (rol_id !== undefined) {
-    updates.rol_id = rol_id;
   }
 
   // 3. Actualizar el usuario
@@ -245,4 +255,3 @@ export const DeleteBarber = async (BarberId) => {
 
   return data;
 }
-

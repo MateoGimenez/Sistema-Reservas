@@ -15,15 +15,26 @@ export const obtenerTodasLasReservas = async () => {
 }
 
 // POST
-export const crearNuevaReserva = async (reservaData) => {
-    // 1. Validar datos
-    reservasValidator.validarDatosCreacion(reservaData)
+export const crearNuevaReserva = async (reservaData, usuario) => {
+    const datosReserva = { ...reservaData }
+    if (usuario.role?.trim().toUpperCase() !== "ADMIN") {
+        const cliente = await reservasRepository.obtenerClientePorUsuarioId(usuario.id)
+        datosReserva.cliente_id = cliente.id
+    }
 
-    const { cliente_id, barbero_id, servicio_id, fecha, hora_inicio, metodo_pago_id } = reservaData
+    // 1. Validar datos
+    reservasValidator.validarDatosCreacion(datosReserva)
+
+    const { cliente_id, barbero_id, servicio_id, fecha, hora_inicio, metodo_pago_id } = datosReserva
 
     // 3. Obtener duración del servicio y calcular hora_fin
     const duracion = await reservasRepository.obtenerDuracionServicio(servicio_id)
     const hora_fin = calcularHoraFin(hora_inicio, duracion)
+
+    const ofreceServicio = await reservasRepository.verificarBarberoOfreceServicio(barbero_id, servicio_id)
+    if (!ofreceServicio) {
+        throw new AppError("El barbero no ofrece este servicio", 400)
+    }
 
     // 4. Verificar disponibilidad
     const reservasConflicto = await reservasRepository.obtenerReservasConflicto(barbero_id, fecha, hora_inicio, hora_fin)
@@ -56,13 +67,17 @@ export const crearNuevaReserva = async (reservaData) => {
 }
 
 // PUT
-export const actualizarReservaExistente = async (id, reservaData) => {
+export const actualizarReservaExistente = async (id, reservaData, usuario) => {
     // 1. Validar datos
     reservasValidator.validarDatosActualizacion(reservaData)
 
     // 2. Verificar que existe
     const reservaExistente = await reservasRepository.obtenerReservaPorId(id)
     reservasValidator.validarExistenciaReserva(reservaExistente)
+    await validarAccesoReserva(reservaExistente, usuario)
+    if (usuario.role?.trim().toUpperCase() !== "ADMIN" && reservaData.cliente_id !== undefined) {
+        throw new AppError("No puedes cambiar el cliente de la reserva", 403)
+    }
 
     // 3. Si se cambian datos críticos, validar disponibilidad
     if (reservaData.barbero_id || reservaData.servicio_id || reservaData.fecha || reservaData.hora_inicio) {
@@ -106,15 +121,25 @@ export const actualizarReservaExistente = async (id, reservaData) => {
 }
 
 // DELETE
-export const eliminarReservaExistente = async (id) => {
+export const eliminarReservaExistente = async (id, usuario) => {
     // 1. Verificar que existe
     const reserva = await reservasRepository.obtenerReservaPorId(id)
     reservasValidator.validarExistenciaReserva(reserva)
+    await validarAccesoReserva(reserva, usuario)
 
     // 2. Eliminar
     await reservasRepository.eliminarReserva(id)
 
     return { mensaje: "Reserva eliminada correctamente" }
+}
+
+const validarAccesoReserva = async (reserva, usuario) => {
+    if (usuario.role?.trim().toUpperCase() === "ADMIN") return
+
+    const cliente = await reservasRepository.obtenerClientePorUsuarioId(usuario.id)
+    if (reserva.cliente_id !== cliente.id) {
+        throw new AppError("No tienes permisos para modificar esta reserva", 403)
+    }
 }
 
 
