@@ -59,4 +59,59 @@ const ValidationAuth = async (email, password) => {
     return resultado;
 };
 
+export const RegisterUser = async ({ nombre, apellido, email, password, telefono }) => {
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const { data: rol, error: rolError } = await supabase
+        .from("roles")
+        .select("id, nombre")
+        .ilike("nombre", "cliente")
+        .single();
+
+    if (rolError || !rol) {
+        throw new AppError("El rol CLIENTE no está configurado", 500);
+    }
+
+    const { data: usuario, error: usuarioError } = await supabase
+        .from("usuarios")
+        .insert({
+            nombre: nombre.trim(),
+            apellido: apellido.trim(),
+            email: email.trim().toLowerCase(),
+            password: passwordHash,
+            telefono: telefono?.trim() || null,
+            rol_id: rol.id
+        })
+        .select("id, nombre, apellido, email, telefono, activo, roles(id, nombre)")
+        .single();
+
+    if (usuarioError) {
+        if (usuarioError.code === "23505") {
+            throw new AppError("Ya existe un usuario con ese email", 409);
+        }
+
+        throw new AppError("Error al registrar el usuario", 500);
+    }
+
+    const { error: clienteError } = await supabase
+        .from("clientes")
+        .insert({ usuario_id: usuario.id });
+
+    if (clienteError) {
+        await supabase.from("usuarios").delete().eq("id", usuario.id);
+        throw new AppError("No se pudo completar el registro del cliente", 500);
+    }
+
+    const token = jwt.sign(
+        { id: usuario.id, rol: usuario.roles.nombre },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+    );
+
+    return {
+        token,
+        usuario
+    };
+};
+
 export default ValidationAuth;
