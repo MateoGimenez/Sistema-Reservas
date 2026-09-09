@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AppError from "../errors/AppError.js"
 import { VerifEmail } from "../repositories/authRepository.js";
-import { createUsuario ,  createCliente} from "../repositories/registerRepository.js";
+import { createUsuario, createCliente } from "../repositories/registerRepository.js";
+import { obtenerRolPorNombre } from "../repositories/catalogRepository.js";
 
 const ValidationAuth = async (email, password) => {
 
@@ -12,7 +13,7 @@ const ValidationAuth = async (email, password) => {
         .select(
             "id,nombre,email,telefono,password,activo,roles(id,nombre)"
         )
-        .eq("email", email)
+        .eq("email", email.trim().toLowerCase())
         .single();
 
     if (error && error.code !== "PGRST116") {
@@ -47,7 +48,7 @@ const ValidationAuth = async (email, password) => {
         }
     );
 
-    const resultado = {
+    return {
         token,
         usuario: {
             id: data.id,
@@ -57,8 +58,6 @@ const ValidationAuth = async (email, password) => {
             rol: data.roles.nombre
         }
     };
-
-    return resultado;
 };
 
 
@@ -74,21 +73,28 @@ export const ValidationRegister = async (data) => {
 
     await VerifEmail(email);
 
+    const rolCliente = await obtenerRolPorNombre("cliente");
     const passwordHash = await bcrypt.hash(password, 10);
 
     const usuario = await createUsuario({
         nombre,
         apellido,
-        email,
+        email: email.trim().toLowerCase(),
         password: passwordHash,
         telefono,
-        rol_id: 3
+        rol_id: rolCliente.id
     });
 
-    const cliente = await createCliente(usuario.id);
-
-    return {
-        usuario,
-        cliente
-    };
+    try {
+        const cliente = await createCliente(usuario.id);
+        return {
+            usuario,
+            cliente
+        };
+    } catch (error) {
+        await supabase.from("usuarios").delete().eq("id", usuario.id);
+        throw error;
+    }
 };
+
+export { ValidationAuth };

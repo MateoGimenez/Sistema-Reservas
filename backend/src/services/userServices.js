@@ -56,7 +56,7 @@ export const CreateUser = async (userData) => {
 
 
 export const EditUser = async (userId, userData) => {
-  const { nombre, apellido, email, password, telefono, rol_id } = userData;
+  const { nombre, apellido, email, password, telefono, rol_id, activo } = userData;
   const updates = {};
 
   if (nombre) updates.nombre = nombre.trim();
@@ -65,6 +65,11 @@ export const EditUser = async (userId, userData) => {
   if (password) updates.password = await bcrypt.hash(password, 10);
   if (telefono !== undefined) updates.telefono = telefono?.trim() || null;
   if (rol_id !== undefined) updates.rol_id = rol_id;
+  if (activo !== undefined) updates.activo = activo;
+
+  if (Object.keys(updates).length === 0) {
+    throw new AppError("No hay campos para actualizar", 400);
+  }
 
   const { data, error } = await supabase
     .from("usuarios")
@@ -93,20 +98,26 @@ export const EditUser = async (userId, userData) => {
 }
 
 export const DeleteUser = async (userId) => {
-  
-  if(!userId){
+  if (!userId) {
     throw new AppError("ID de usuario no proporcionado", 400);
   }
 
-  const {data , error } = await supabase.from("usuarios").delete().eq("id", userId).select().single();
+  const { data, error } = await supabase
+    .from("usuarios")
+    .update({ activo: false })
+    .eq("id", userId)
+    .select("id, nombre, apellido, email, activo")
+    .single();
 
-  if(error) {
-    throw new AppError("Error al eliminar el usuario", 500);
+  if (error) {
+    throw new AppError("Error al desactivar el usuario", 500);
   }
 
   if (!data) {
-    throw new AppError("No se pudo eliminar el usuario", 400);
+    throw new AppError("No se pudo desactivar el usuario", 400);
   }
+
+  await supabase.from("barberos").update({ activo: false }).eq("usuario_id", userId);
 
   return data;
 }

@@ -1,7 +1,7 @@
 import supabase from "../config/supabase.js"
 import AppError from "../errors/AppError.js"
+import { obtenerIdsEstadosQueOcupanTurno } from "./catalogRepository.js"
 
-// GET
 export const obtenerTodasLasReservas = async () => {
     const { data, error } = await supabase
         .from("reservas")
@@ -10,8 +10,8 @@ export const obtenerTodasLasReservas = async () => {
             fecha,
             hora_inicio,
             hora_fin,
-            cliente_id (usuario_id (nombre, telefono)),
-            barbero_id (usuario_id (nombre)),
+            cliente_id (id, usuario_id (nombre, telefono)),
+            barbero_id (id, usuario_id (nombre)),
             servicio_id (nombre, precio, duracion_minutos),
             estado_id (nombre),
             metodo_pago_id (nombre)
@@ -26,43 +26,83 @@ export const obtenerReservaPorId = async (id) => {
         .from("reservas")
         .select("*")
         .eq("id", id)
-        .single()
+        .maybeSingle()
 
-    if (error) throw new AppError("Reserva no encontrada", 404)
+    if (error) throw new AppError("Error al obtener la reserva", 500)
     return data
 }
 
-// Verificaciones
+export const obtenerClientePorUsuarioId = async (usuarioId) => {
+    const { data, error } = await supabase
+        .from("clientes")
+        .select("id, usuario_id")
+        .eq("usuario_id", usuarioId)
+        .maybeSingle()
+
+    if (error) throw new AppError("Error al obtener el cliente", 500)
+    return data
+}
+
+export const obtenerBarberoActivo = async (barberoId) => {
+    const { data, error } = await supabase
+        .from("barberos")
+        .select("id, activo, usuario_id")
+        .eq("id", barberoId)
+        .maybeSingle()
+
+    if (error) throw new AppError("Error al obtener el barbero", 500)
+    return data
+}
+
+export const obtenerServicioActivo = async (servicioId) => {
+    const { data, error } = await supabase
+        .from("servicios")
+        .select("id, duracion_minutos, activo")
+        .eq("id", servicioId)
+        .maybeSingle()
+
+    if (error) throw new AppError("Error al obtener el servicio", 500)
+    return data
+}
+
+export const obtenerHorariosBarbero = async (barberoId, diaSemana) => {
+    const { data, error } = await supabase
+        .from("horarios")
+        .select("hora_inicio, hora_fin")
+        .eq("barbero_id", barberoId)
+        .eq("dia_semana", diaSemana)
+
+    if (error) throw new AppError("Error al obtener los horarios del barbero", 500)
+    return data || []
+}
+
 export const verificarBarberoOfreceServicio = async (barberoId, servicioId) => {
     const { data, error } = await supabase
         .from("barbero_servicio")
-        .select("*")
+        .select("barbero_id")
         .eq("barbero_id", barberoId)
         .eq("servicio_id", servicioId)
-        .single()
+        .maybeSingle()
 
-    if (error || !data) return false
-    return true
+    if (error) return false
+    return Boolean(data)
 }
 
 export const obtenerDuracionServicio = async (servicioId) => {
-    const { data, error } = await supabase
-        .from("servicios")
-        .select("duracion_minutos")
-        .eq("id", servicioId)
-        .single()
-
-    if (error) throw new AppError("Servicio no encontrado", 404)
-    return data.duracion_minutos
+    const servicio = await obtenerServicioActivo(servicioId)
+    if (!servicio) throw new AppError("Servicio no encontrado", 404)
+    return servicio.duracion_minutos
 }
 
-export const obtenerReservasConflicto = async (barberoId, fecha, horaInicio, horaFin, excluirId = null) => {
+export const obtenerReservasConflicto = async (barberoId, fecha, excluirId = null) => {
+    const estadosOcupan = await obtenerIdsEstadosQueOcupanTurno()
+
     let query = supabase
         .from("reservas")
         .select("hora_inicio, hora_fin")
         .eq("barbero_id", barberoId)
         .eq("fecha", fecha)
-        .in("estado_id", [1, 2]) // Estados activos
+        .in("estado_id", estadosOcupan)
 
     if (excluirId) {
         query = query.neq("id", excluirId)
@@ -74,29 +114,21 @@ export const obtenerReservasConflicto = async (barberoId, fecha, horaInicio, hor
     return data || []
 }
 
-export const obtenerEstadoPorNombre = async (nombre) => {
-    const { data, error } = await supabase
-        .from("estados_reserva")
-        .select("id")
-        .eq("nombre", nombre)
-        .single()
-
-    if (error) throw new AppError(`Estado '${nombre}' no encontrado`, 500)
-    return data
-}
-
-// CREATE
 export const crearReserva = async (reservaData) => {
     const { data, error } = await supabase
         .from("reservas")
         .insert([reservaData])
         .select()
 
-    if (error) throw new AppError("Error al crear la reserva", 500)
+    if (error) {
+        if (error.code === "23503") {
+            throw new AppError("Alguna referencia de la reserva no existe", 400)
+        }
+        throw new AppError("Error al crear la reserva", 500)
+    }
     return data[0]
 }
 
-// UPDATE
 export const actualizarReserva = async (id, actualizaciones) => {
     const { data, error } = await supabase
         .from("reservas")
@@ -108,7 +140,6 @@ export const actualizarReserva = async (id, actualizaciones) => {
     return data[0]
 }
 
-// DELETE
 export const eliminarReserva = async (id) => {
     const { error } = await supabase
         .from("reservas")

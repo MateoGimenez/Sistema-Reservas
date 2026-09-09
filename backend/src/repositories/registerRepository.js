@@ -11,6 +11,9 @@ export const createUsuario = async (usuario) => {
         .single();
 
     if (error) {
+        if (error.code === "23505") {
+            throw new AppError("Ya existe un usuario con ese email", 409);
+        }
         throw new AppError(
             "Error al crear el usuario",
             500

@@ -8,7 +8,7 @@ import ReservasRouter from "./routes/reservaRoutes.js"
 import BarberosRouter from "./routes/barberosRoutes.js"
 import { errorHandler } from "./middlewares/errorMiddleware.js"
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3000
 const app = express()
 
 app.use(cors())
