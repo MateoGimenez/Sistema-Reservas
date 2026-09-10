@@ -18,7 +18,7 @@ app.use("/api/auth", LoginRoutes)
 app.use("/api/admin", userRoutes)
 app.use("/api/admin", ClientRouter)
 app.use("/api/admin" , BarberosRouter)
-app.use("/api/admin", ReservasRouter)
+app.use("/api", ReservasRouter)
 
 app.use(errorHandler)
 

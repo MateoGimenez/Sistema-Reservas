@@ -4,12 +4,12 @@ import { authorizeRoles, authorizeToken } from "../middlewares/authMiddleware.js
 
 const router = Router();
 
-router.get("/barberos" ,authorizeToken , authorizeRoles("admin"), getBarbers)
+router.get("/barbers" ,authorizeToken , authorizeRoles("admin"), getBarbers)
 
-router.post("/barberos" , authorizeToken, authorizeRoles("admin"), NewBarber)
+router.post("/barbers" , authorizeToken, authorizeRoles("admin"), NewBarber)
 
-router.put('/barberos/:id', authorizeToken, authorizeRoles("admin"), EditBarberId)
+router.put('/barbers/:id', authorizeToken, authorizeRoles("admin"), EditBarberId)
 
-router.delete('/barberos/:id', authorizeToken, authorizeRoles("admin"), DeleteBarberId)
+router.delete('/barbers/:id', authorizeToken, authorizeRoles("admin"), DeleteBarberId)
 
 export default router

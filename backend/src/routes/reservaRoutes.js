@@ -4,14 +4,14 @@ import { getAllReservas, createReserva, updateReserva, deleteReserva } from "../
 
 const router = Router()
 
-router.get("/reservas", authorizeToken, authorizeRoles('admin'), getAllReservas)
+router.get("/reserve", authorizeToken, authorizeRoles('admin'), getAllReservas)
 
-router.post("/reservas", authorizeToken, authorizeRoles('cliente', 'admin'), createReserva)
+router.post("/reserve", authorizeToken, authorizeRoles('cliente', 'admin'), createReserva)
 
 // PUT - Actualizar reserva (admin o dueño)
-router.put("/reservas/:id", authorizeToken, authorizeRoles('admin', 'cliente'), updateReserva)
+router.put("/reserve/:id", authorizeToken, authorizeRoles('admin', 'cliente'), updateReserva)
 
 // DELETE - Eliminar reserva (admin o dueño)
-router.delete("/reservas/:id", authorizeToken, authorizeRoles('admin', 'cliente'), deleteReserva)
+router.delete("/reserve/:id", authorizeToken, authorizeRoles('admin', 'cliente'), deleteReserva)
 
 export default router
